@@ -30,22 +30,32 @@ namespace TNRD.Builders
         {
             AdvancedDropdownItem root = new AdvancedDropdownItem("Assets");
             splitToItem.Add("Assets/", root); // Needs the trailing slash to be recognized later on
-
-            string[] allAssetPaths = AssetDatabase.GetAllAssetPaths();
-            foreach (string assetPath in allAssetPaths)
+            
+            var derivedTypes = TypeCache.GetTypesDerivedFrom(interfaceType);
+            foreach (var type in derivedTypes)
             {
-                Type assetType = AssetDatabase.GetMainAssetTypeAtPath(assetPath);
-                if (interfaceType.IsAssignableFrom(assetType))
+                var assetPaths = AssetDatabase.FindAssets($"t:{type.Name}");
+                foreach (var assetPath in assetPaths)
                 {
-                    CreateItemForPath(root, assetPath);
-                }
-                else if (assetType == typeof(GameObject))
-                {
-                    GameObject gameObject = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
-                    if (gameObject.GetComponent(interfaceType) != null)
-                        CreateItemForPath(root, assetPath);
+                    CreateItemForPath(root, AssetDatabase.GUIDToAssetPath(assetPath));
                 }
             }
+
+            // string[] allAssetPaths = AssetDatabase.GetAllAssetPaths();
+            // foreach (string assetPath in allAssetPaths)
+            // {
+            //     Type assetType = AssetDatabase.GetMainAssetTypeAtPath(assetPath);
+            //     if (interfaceType.IsAssignableFrom(assetType))
+            //     {
+            //         CreateItemForPath(root, assetPath);
+            //     }
+            //     else if (assetType == typeof(GameObject))
+            //     {
+            //         GameObject gameObject = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
+            //         if (gameObject.GetComponent(interfaceType) != null)
+            //             CreateItemForPath(root, assetPath);
+            //     }
+            // }
 
             return Collapse(root);
         }
